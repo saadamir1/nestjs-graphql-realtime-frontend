@@ -1,38 +1,160 @@
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
   color: white;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.App-link {
-  color: #61dafb;
+.login-form {
+  background: #f5f5f5;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.login-form h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-form button:hover {
+  background-color: #0056b3;
+}
+
+.notification-center {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.create-notification {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.create-notification form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.create-notification input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.notifications-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 5px 0;
+}
+
+.notification.unread {
+  border-left: 4px solid #007bff;
+  background: #f8f9ff;
+}
+
+.notification.new {
+  border-left: 4px solid #28a745;
+  background: #f8fff8;
+}
+
+.live-notification {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.realtime-status {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.status-item {
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.status-item.connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-item.waiting {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
 }
