@@ -67,6 +67,40 @@ const MY_NOTIFICATIONS = gql`
   }
 `;
 
+const CREATE_ROOM = gql`
+  mutation CreateRoom($name: String!, $participantIds: [Float!]!) {
+    createRoom(createRoomInput: {
+      name: $name
+      participantIds: $participantIds
+    }) {
+      id
+      name
+    }
+  }
+`;
+
+const SEND_MESSAGE = gql`
+  mutation SendMessage($content: String!, $roomId: Float!) {
+    sendMessage(sendMessageInput: {
+      content: $content
+      roomId: $roomId
+    }) {
+      id
+      content
+      senderId
+    }
+  }
+`;
+
+const MY_ROOMS = gql`
+  query {
+    myRooms {
+      id
+      name
+    }
+  }
+`;
+
 const MESSAGE_SUBSCRIPTION = gql`
   subscription {
     messageAdded {
@@ -276,6 +310,113 @@ function NotificationCenter() {
   );
 }
 
+function ChatCenter() {
+  const { data: userData } = useQuery(GET_ME);
+  const { data: rooms, refetch: refetchRooms } = useQuery(MY_ROOMS);
+  const { data: newMessage } = useSubscription(MESSAGE_SUBSCRIPTION);
+  const [roomName, setRoomName] = useState('');
+  const [messageContent, setMessageContent] = useState('');
+  const [selectedRoom, setSelectedRoom] = useState(null);
+
+  const [createRoom] = useMutation(CREATE_ROOM, {
+    onCompleted: () => {
+      setRoomName('');
+      refetchRooms();
+    }
+  });
+
+  const [sendMessage] = useMutation(SEND_MESSAGE, {
+    onCompleted: () => {
+      setMessageContent('');
+    }
+  });
+
+  const handleCreateRoom = (e) => {
+    e.preventDefault();
+    if (!userData?.me?.id || !roomName) return;
+    
+    createRoom({
+      variables: {
+        name: roomName,
+        participantIds: [parseInt(userData.me.id)]
+      }
+    });
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!selectedRoom || !messageContent) return;
+    
+    sendMessage({
+      variables: {
+        content: messageContent,
+        roomId: parseInt(selectedRoom)
+      }
+    });
+  };
+
+  return (
+    <div className="chat-center">
+      <h3>💬 Chat Center</h3>
+      
+      <div className="create-room">
+        <h4>Create Room</h4>
+        <form onSubmit={handleCreateRoom}>
+          <input
+            type="text"
+            placeholder="Room Name"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+            required
+          />
+          <button type="submit">Create Room</button>
+        </form>
+      </div>
+
+      <div className="room-selection">
+        <h4>Select Room</h4>
+        <select 
+          value={selectedRoom || ''} 
+          onChange={(e) => setSelectedRoom(e.target.value)}
+        >
+          <option value="">Choose a room...</option>
+          {rooms?.myRooms?.map((room) => (
+            <option key={room.id} value={room.id}>
+              {room.name} (ID: {room.id})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {selectedRoom && (
+        <div className="send-message">
+          <h4>Send Message</h4>
+          <form onSubmit={handleSendMessage}>
+            <input
+              type="text"
+              placeholder="Type your message..."
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
+              required
+            />
+            <button type="submit">Send Message</button>
+          </form>
+        </div>
+      )}
+
+      {newMessage && (
+        <div className="live-message">
+          <h4>🔴 Live Message Received:</h4>
+          <div className="message new">
+            <p><strong>Room {newMessage.messageAdded.roomId}:</strong> {newMessage.messageAdded.content}</p>
+            <small>From User {newMessage.messageAdded.senderId}</small>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RealtimeStatus() {
   const { data: messageData } = useSubscription(MESSAGE_SUBSCRIPTION);
   const { data: notificationData } = useSubscription(NOTIFICATION_SUBSCRIPTION);
@@ -323,6 +464,7 @@ function App() {
             <div>
               <h2>Welcome to Real-time Dashboard!</h2>
               <RealtimeStatus />
+              <ChatCenter />
               <NotificationCenter />
             </div>
           )}
