@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { Link } from 'react-router-dom';
-import { LOGIN_MUTATION } from '../../graphql/operations';
-import { useAuth } from '../../contexts/AuthContext';
-import './AuthForms.css';
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import { Link, useNavigate } from "react-router-dom";
+import { LOGIN_MUTATION } from "../../graphql/operations";
+import { useAuth } from "../../contexts/AuthContext";
+import "./AuthForms.css";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const getErrorMessage = (error) => {
     if (error.graphQLErrors && error.graphQLErrors.length > 0) {
@@ -26,25 +27,26 @@ const LoginForm = () => {
     onCompleted: (data) => {
       login(data.login);
       setIsLoading(false);
+      navigate("/dashboard");
     },
     onError: (error) => {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setErrors({ submit: getErrorMessage(error) });
       setIsLoading(false);
-    }
+    },
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -53,15 +55,15 @@ const LoginForm = () => {
     const newErrors = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -78,8 +80,8 @@ const LoginForm = () => {
     loginMutation({
       variables: {
         email: formData.email,
-        password: formData.password
-      }
+        password: formData.password,
+      },
     });
   };
 
@@ -98,11 +100,13 @@ const LoginForm = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               placeholder="Enter your email"
               disabled={isLoading}
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && (
+              <span className="error-message">{errors.email}</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -113,31 +117,30 @@ const LoginForm = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              className={errors.password ? "error" : ""}
               placeholder="Enter your password"
               disabled={isLoading}
             />
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && (
+              <span className="error-message">{errors.password}</span>
+            )}
           </div>
 
           {errors.submit && (
-            <div className="error-message submit-error">
-              {errors.submit}
-            </div>
+            <div className="error-message submit-error">{errors.submit}</div>
           )}
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+          <button type="submit" className="auth-button" disabled={isLoading}>
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
+          <div className="auth-link">
+            New user? <Link to="/register">Register here</Link>
+          </div>
         </form>
 
         <div className="auth-links">
           <p>
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link to="/register" className="auth-link">
               Sign up here
             </Link>

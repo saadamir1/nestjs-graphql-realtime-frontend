@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { Link } from 'react-router-dom';
-import { REGISTER_MUTATION } from '../../graphql/operations';
-import { useAuth } from '../../contexts/AuthContext';
-import './AuthForms.css';
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import { Link } from "react-router-dom";
+import { REGISTER_MUTATION } from "../../graphql/operations";
+import { useAuth } from "../../contexts/AuthContext";
+import "./AuthForms.css";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -31,23 +31,23 @@ const RegisterForm = () => {
       setIsLoading(false);
     },
     onError: (error) => {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       setErrors({ submit: getErrorMessage(error) });
       setIsLoading(false);
-    }
+    },
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -56,29 +56,27 @@ const RegisterForm = () => {
     const newErrors = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is required";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -97,8 +95,8 @@ const RegisterForm = () => {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email,
-        password: formData.password
-      }
+        password: formData.password,
+      },
     });
   };
 
@@ -118,11 +116,13 @@ const RegisterForm = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={errors.firstName ? 'error' : ''}
+                className={errors.firstName ? "error" : ""}
                 placeholder="First name"
                 disabled={isLoading}
               />
-              {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+              {errors.firstName && (
+                <span className="error-message">{errors.firstName}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -133,11 +133,13 @@ const RegisterForm = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={errors.lastName ? 'error' : ''}
+                className={errors.lastName ? "error" : ""}
                 placeholder="Last name"
                 disabled={isLoading}
               />
-              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+              {errors.lastName && (
+                <span className="error-message">{errors.lastName}</span>
+              )}
             </div>
           </div>
 
@@ -149,11 +151,13 @@ const RegisterForm = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               placeholder="Enter your email"
               disabled={isLoading}
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && (
+              <span className="error-message">{errors.email}</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -164,11 +168,13 @@ const RegisterForm = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              className={errors.password ? "error" : ""}
               placeholder="Create a password"
               disabled={isLoading}
             />
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && (
+              <span className="error-message">{errors.password}</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -179,31 +185,27 @@ const RegisterForm = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? 'error' : ''}
+              className={errors.confirmPassword ? "error" : ""}
               placeholder="Confirm your password"
               disabled={isLoading}
             />
-            {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+            {errors.confirmPassword && (
+              <span className="error-message">{errors.confirmPassword}</span>
+            )}
           </div>
 
           {errors.submit && (
-            <div className="error-message submit-error">
-              {errors.submit}
-            </div>
+            <div className="error-message submit-error">{errors.submit}</div>
           )}
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Creating Account...' : 'Create Account'}
+          <button type="submit" className="auth-button" disabled={isLoading}>
+            {isLoading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
         <div className="auth-links">
           <p>
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link to="/login" className="auth-link">
               Sign in here
             </Link>
