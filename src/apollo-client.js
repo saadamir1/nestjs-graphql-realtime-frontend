@@ -15,9 +15,15 @@ const httpLink = createHttpLink({
 
 // WebSocket link for subscriptions
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:3000/graphql',
+  uri: "ws://localhost:3000/graphql",
   options: {
     reconnect: true,
+    connectionParams: () => {
+      const token = localStorage.getItem("access_token");
+      return {
+        authorization: token ? `Bearer ${token}` : "",
+      };
+    },
   },
 });
 
