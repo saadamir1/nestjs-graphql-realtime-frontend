@@ -9,8 +9,11 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+
 import NotificationCenter from "./components/notifications/NotificationCenter";
 import ChatDashboard from "./components/chat/ChatDashboard";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const AppRoutes = () => {
   const isLoggedIn = !!localStorage.getItem("access_token");
@@ -19,6 +22,7 @@ const AppRoutes = () => {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/dashboard"
           element={isLoggedIn ? <DashboardLayout /> : <Navigate to="/login" />}
@@ -28,6 +32,7 @@ const AppRoutes = () => {
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="chat" element={<ChatDashboard />} />
         </Route>
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="*"
           element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} />}
