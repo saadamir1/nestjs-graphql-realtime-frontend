@@ -1,4 +1,15 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
+
+export const USERS_QUERY = gql`
+  query {
+    users {
+      id
+      firstName
+      lastName
+      email
+    }
+  }
+`;
 
 // Authentication mutations
 export const LOGIN_MUTATION = gql`
@@ -11,27 +22,40 @@ export const LOGIN_MUTATION = gql`
 `;
 
 export const REGISTER_MUTATION = gql`
-  mutation Register($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
-    register(registerInput: {
-      email: $email
-      password: $password
-      firstName: $firstName
-      lastName: $lastName
-    }) {
-      access_token
-      refresh_token
+  mutation Register(
+    $email: String!
+    $password: String!
+    $firstName: String!
+    $lastName: String!
+  ) {
+    register(
+      registerInput: {
+        email: $email
+        password: $password
+        firstName: $firstName
+        lastName: $lastName
+      }
+    ) {
+      message
     }
   }
 `;
 
 export const BOOTSTRAP_ADMIN = gql`
-  mutation BootstrapAdmin($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
-    bootstrapAdmin(bootstrapInput: {
-      email: $email
-      password: $password
-      firstName: $firstName
-      lastName: $lastName
-    }) {
+  mutation BootstrapAdmin(
+    $email: String!
+    $password: String!
+    $firstName: String!
+    $lastName: String!
+  ) {
+    bootstrapAdmin(
+      bootstrapInput: {
+        email: $email
+        password: $password
+        firstName: $firstName
+        lastName: $lastName
+      }
+    ) {
       access_token
       refresh_token
     }
@@ -53,13 +77,20 @@ export const GET_ME = gql`
 
 // Notification operations
 export const CREATE_NOTIFICATION = gql`
-  mutation CreateNotification($title: String!, $message: String!, $type: String!, $userId: Float!) {
-    createNotification(createNotificationInput: {
-      title: $title
-      message: $message
-      type: $type
-      userId: $userId
-    }) {
+  mutation CreateNotification(
+    $title: String!
+    $message: String!
+    $type: String!
+    $userId: Float!
+  ) {
+    createNotification(
+      createNotificationInput: {
+        title: $title
+        message: $message
+        type: $type
+        userId: $userId
+      }
+    ) {
       id
       title
       message
@@ -98,10 +129,9 @@ export const DELETE_NOTIFICATION = gql`
 // Chat operations
 export const CREATE_ROOM = gql`
   mutation CreateRoom($name: String!, $participantIds: [Float!]!) {
-    createRoom(createRoomInput: {
-      name: $name
-      participantIds: $participantIds
-    }) {
+    createRoom(
+      createRoomInput: { name: $name, participantIds: $participantIds }
+    ) {
       id
       name
     }
@@ -110,13 +140,16 @@ export const CREATE_ROOM = gql`
 
 export const SEND_MESSAGE = gql`
   mutation SendMessage($content: String!, $roomId: Float!) {
-    sendMessage(sendMessageInput: {
-      content: $content
-      roomId: $roomId
-    }) {
+    sendMessage(sendMessageInput: { content: $content, roomId: $roomId }) {
       id
       content
       senderId
+      sender {
+        firstName
+        lastName
+      }
+      createdAt
+      roomId
     }
   }
 `;
