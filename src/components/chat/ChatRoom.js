@@ -1,30 +1,41 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation, useSubscription } from '@apollo/client';
-import { ROOM_MESSAGES, SEND_MESSAGE, MESSAGE_SUBSCRIPTION } from '../../graphql/operations';
-import './Chat.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation, useSubscription } from "@apollo/client";
+import {
+  ROOM_MESSAGES,
+  SEND_MESSAGE,
+  MESSAGE_SUBSCRIPTION,
+} from "../../graphql/operations";
+import "./Chat.css";
 
 const ChatRoom = ({ room, currentUser }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
 
-  const { data: messagesData, loading, refetch } = useQuery(ROOM_MESSAGES, {
+  const {
+    data: messagesData,
+    loading,
+    refetch,
+  } = useQuery(ROOM_MESSAGES, {
     variables: { roomId: parseFloat(room.id) },
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: "cache-and-network",
   });
 
   const { data: newMessage } = useSubscription(MESSAGE_SUBSCRIPTION);
 
   const [sendMessage, { loading: sending }] = useMutation(SEND_MESSAGE, {
     onCompleted: () => {
-      setMessage('');
+      setMessage("");
+      // Do not clear optimistic messages here; let them be removed only when real message appears
       refetch();
     },
     onError: (error) => {
-      console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
-    }
+      setOptimisticMessages([]); // Remove optimistic message on error
+      console.error("Error sending message:", error);
+      alert("Failed to send message. Please try again.");
+    },
   });
 
   // Scroll to bottom when messages change
@@ -35,9 +46,13 @@ const ChatRoom = ({ room, currentUser }) => {
   // Refetch messages when new message arrives for this room
   useEffect(() => {
     if (newMessage?.messageAdded?.roomId === parseInt(room.id)) {
+      // If the new message is from the current user, clear optimistic messages
+      if (newMessage.messageAdded.senderId === parseInt(currentUser.id)) {
+        setOptimisticMessages([]);
+      }
       refetch();
     }
-  }, [newMessage, room.id, refetch]);
+  }, [newMessage, room.id, refetch, currentUser.id]);
 
   // Focus input when room changes
   useEffect(() => {
@@ -47,23 +62,40 @@ const ChatRoom = ({ room, currentUser }) => {
   }, [room.id]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim() || sending) return;
 
+    // Optimistically add the message
+    const tempId = `optimistic-${Date.now()}`;
+    setOptimisticMessages((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        content: message.trim(),
+        senderId: parseInt(currentUser.id),
+        sender: {
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+        },
+        createdAt: new Date().toISOString(),
+        optimistic: true,
+      },
+    ]);
+
     sendMessage({
       variables: {
         content: message.trim(),
-        roomId: parseFloat(room.id)
-      }
+        roomId: parseFloat(room.id),
+      },
     });
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -75,13 +107,27 @@ const ChatRoom = ({ room, currentUser }) => {
     const diffInHours = (now - date) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
   };
 
-  const messages = messagesData?.roomMessages || [];
+  // Merge optimistic messages with real messages, filtering out duplicates
+  const realMessages = messagesData?.roomMessages || [];
+  // Only remove optimistic message if a real message with same content, sender, and close timestamp exists
+  const filteredOptimistic = optimisticMessages.filter((om) => {
+    return !realMessages.some(
+      (m) =>
+        m.content === om.content &&
+        m.senderId === om.senderId &&
+        Math.abs(new Date(m.createdAt) - new Date(om.createdAt)) < 10000
+    );
+  });
+  const messages = [...realMessages, ...filteredOptimistic];
 
   return (
     <div className="chat-room">
@@ -94,7 +140,7 @@ const ChatRoom = ({ room, currentUser }) => {
           {room.participants?.map((participant, index) => (
             <span key={participant.id} className="participant-badge">
               {participant.firstName} {participant.lastName}
-              {index < room.participants.length - 1 && ', '}
+              {index < room.participants.length - 1 && ", "}
             </span>
           ))}
         </div>
@@ -114,12 +160,14 @@ const ChatRoom = ({ room, currentUser }) => {
           <div className="messages-list">
             {messages.map((msg, index) => {
               const isOwnMessage = msg.senderId === parseInt(currentUser.id);
-              const showSender = index === 0 || messages[index - 1].senderId !== msg.senderId;
-              
+              const showSender =
+                index === 0 || messages[index - 1].senderId !== msg.senderId;
               return (
                 <div
                   key={msg.id}
-                  className={`message ${isOwnMessage ? 'own-message' : 'other-message'}`}
+                  className={`message ${
+                    isOwnMessage ? "own-message" : "other-message"
+                  }${msg.optimistic ? " optimistic" : ""}`}
                 >
                   {showSender && !isOwnMessage && (
                     <div className="message-sender">
@@ -130,6 +178,11 @@ const ChatRoom = ({ room, currentUser }) => {
                     <p>{msg.content}</p>
                     <span className="message-time">
                       {formatTime(msg.createdAt)}
+                      {msg.optimistic && (
+                        <span style={{ color: "#aaa", marginLeft: 4 }}>
+                          (sending...)
+                        </span>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -158,7 +211,7 @@ const ChatRoom = ({ room, currentUser }) => {
             disabled={!message.trim() || sending}
             title="Send message (Enter)"
           >
-            {sending ? '⏳' : '📤'}
+            {sending ? "⏳" : "📤"}
           </button>
         </div>
       </form>
